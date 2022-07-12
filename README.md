@@ -24,5 +24,5 @@ MC_HOST_object-storage=https://<Access Key>:<Secret Key>@<YOUR-S3-ENDPOINT>
 # Run
 
 ```sh
-docker run --env-file .env
+docker run --env-file .env ghcr.io/lapwat/sql-backup-to-bucket
 ```
