@@ -1,16 +1,45 @@
-# SQL backup to bucket
+# Backup to bucket
 
-This Docker image let's you backup an SQL database using environment variables.
+This Docker image let's you backup different types of data to a bucket using environment variables.
 
 Actions performed by the script:
-- create a backup of the database: `${BACKUP_PREFIX}_YYYYmmddHHMMSS.sql`
-- create the bucket specified by `BUCKET_NAME` and `MC_HOST_objectstorage` environment variables with trantion and expiry lffecycle rules (if it does not exist yet)
-- upload the backup to the bucket
+- create the backup
+- create an archive of the backup
+- create the bucket specified by `BUCKET_NAME` and `MC_HOST_object-storage` environment variables with transition and expiry lifecycle rules (if it does not exist yet)
+- upload the archive to the bucket
 
-# Configure database and bucket access
+## Run
+
+```sh
+docker build -t ghcr.io/lapwat/sql-backup-to-bucket .
+docker run --env-file .env ghcr.io/lapwat/sql-backup-to-bucket
+```
+
+## Configuration
+
+### Backup a file / folder
+
+This configuration creates a `${BACKUP_PREFIX}_YYYYmmddHHMMSS.tar.gz` archive of a file or folder.
 
 .env
 ```
+BACKUP_TYPE=FILE
+BACKUP_FILENAME=/etc/hosts
+BACKUP_PREFIX=mybackup
+MC_HOST_object-storage=https://<Access Key>:<Secret Key>@<YOUR-S3-ENDPOINT>
+BUCKET_NAME=mybucket
+BUCKET_TRANSITION_DAYS=7
+BUCKET_TRANSITION_STORAGE_CLASS=GLACIER
+BUCKET_EXPIRY_DAYS=90
+```
+
+### Backup a database
+
+This configuration creates a `${BACKUP_PREFIX}_YYYYmmddHHMMSS.sql.gz` archive of a mysql database.
+
+.env
+```
+BACKUP_TYPE=MYSQL
 DATABASE_HOST=localhost
 DATABASE_PORT=3306
 DATABASE_USER=root
@@ -22,11 +51,4 @@ BUCKET_NAME=mybucket
 BUCKET_TRANSITION_DAYS=7
 BUCKET_TRANSITION_STORAGE_CLASS=GLACIER
 BUCKET_EXPIRY_DAYS=90
-```
-
-# Run
-
-```sh
-docker build -t ghcr.io/lapwat/sql-backup-to-bucket .
-docker run --env-file .env ghcr.io/lapwat/sql-backup-to-bucket
 ```
