@@ -5,7 +5,11 @@ backup_name="${BACKUP_PREFIX}_$(date +%Y%m%d%H%M%S)"
 case "${BACKUP_TYPE}" in
     MYSQL)
         backup_name="${backup_name}.sql"
-        mysqldump --opt --single-transaction --host="${DATABASE_HOST}" --user="${DATABASE_USER}" --password="${DATABASE_PASSWORD}" --databases "${DATABASE_NAME}" > "${backup_name}"
+        mysqldump --opt --single-transaction --host="${DATABASE_HOST}" --port="${DATABASE_PORT}" --user="${DATABASE_USER}" --password="${DATABASE_PASSWORD}" --databases "${DATABASE_NAME}" > "${backup_name}"
+        ;;
+    POSTGRES)
+        backup_name="${backup_name}.sql"
+        PGPASSWORD="${DATABASE_PASSWORD}" pg_dump --host="${DATABASE_HOST}" --port="${DATABASE_PORT}" --username="${DATABASE_USER}" --no-password "${DATABASE_NAME}" > "${backup_name}"
         ;;
     FILE)
         backup_name="${backup_name}.tar"
@@ -13,7 +17,7 @@ case "${BACKUP_TYPE}" in
         ;;
     *)
         echo "Unknown backup type: ${BACKUP_TYPE}"
-        echo 'Allowed backup types: MYSQL FILE'
+        echo 'Allowed backup types: MYSQL POSTGRES FILE'
         exit 1;;
 esac
 

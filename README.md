@@ -39,7 +39,7 @@ This configuration creates a `${BACKUP_PREFIX}_YYYYmmddHHMMSS.sql.gz` archive of
 
 .env
 ```
-BACKUP_TYPE=MYSQL
+BACKUP_TYPE=MYSQL|POSTGRES
 DATABASE_HOST=localhost
 DATABASE_PORT=3306
 DATABASE_USER=root
