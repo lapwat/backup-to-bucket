@@ -1,29 +1,38 @@
 #!/bin/sh
 
 # create backup
-backup_name="${BACKUP_PREFIX}_$(date +%Y%m%d%H%M%S)"
+backup_prefix="${BACKUP_PREFIX}_$(date +%Y%m%d%H%M%S)"
 case "${BACKUP_TYPE}" in
+    FILE)
+        backup_name="${backup_prefix}.tar"
+        tar cf "${backup_name}" "${BACKUP_FILENAME}"
+        ;;
     MYSQL)
-        backup_name="${backup_name}.sql"
+        backup_name="${backup_prefix}.sql"
         mysqldump --opt --single-transaction --host="${DATABASE_HOST}" --port="${DATABASE_PORT}" --user="${DATABASE_USER}" --password="${DATABASE_PASSWORD}" --databases "${DATABASE_NAME}" > "${backup_name}"
         ;;
     POSTGRES)
-        backup_name="${backup_name}.sql"
+        backup_name="${backup_prefix}.sql"
         PGPASSWORD="${DATABASE_PASSWORD}" pg_dump --host="${DATABASE_HOST}" --port="${DATABASE_PORT}" --username="${DATABASE_USER}" --no-password "${DATABASE_NAME}" > "${backup_name}"
-        ;;
-    FILE)
-        backup_name="${backup_name}.tar"
-        tar cf "${backup_name}" "${BACKUP_FILENAME}"
         ;;
     *)
         echo "Unknown backup type: ${BACKUP_TYPE}"
-        echo 'Allowed backup types: MYSQL POSTGRES FILE'
+        echo 'Allowed backup types: FILE MYSQL POSTGRES'
         exit 1;;
 esac
 
-# compress backup
-archive_name="${backup_name}.gz"
-gzip "${backup_name}"
+# compress
+if [ "${COMPRESS}" = true ]; then
+    gzip "${backup_name}"
+    backup_name="${backup_name}.gz"
+fi
+
+# encrypt
+if [ ! -z "${ENCRYPTION_KEY}" ]; then
+    cipher_name="${backup_name}.enc"
+    openssl enc -aes-256-cbc -salt -pbkdf2 -k "${ENCRYPTION_KEY}" -in "${backup_name}" -out "${cipher_name}"
+    backup_name="${cipher_name}"
+fi
 
 # create bucket
 mc mb "objectstorage/${BUCKET_NAME}"
@@ -35,4 +44,4 @@ if [ $? -eq 0 ]; then
 fi
 
 # upload archive
-mc cp "${archive_name}" "objectstorage/${BUCKET_NAME}"
+mc cp "${backup_name}" "objectstorage/${BUCKET_NAME}"
