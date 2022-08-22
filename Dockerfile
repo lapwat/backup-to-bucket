@@ -1,6 +1,6 @@
 FROM alpine
 
-RUN apk add --no-cache openssl mysql-client postgresql-client
+RUN apk add --no-cache age mysql-client postgresql-client
 
 # minio client
 RUN wget https://dl.min.io/client/mc/release/linux-amd64/mc

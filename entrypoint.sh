@@ -28,9 +28,9 @@ if [ "${COMPRESS}" = true ]; then
 fi
 
 # encrypt
-if [ ! -z "${ENCRYPTION_KEY}" ]; then
-    cipher_name="${backup_name}.enc"
-    openssl enc -aes-256-cbc -salt -pbkdf2 -k "${ENCRYPTION_KEY}" -in "${backup_name}" -out "${cipher_name}"
+if [ ! -z "${AGE_PUBLIC_KEY}" ]; then
+    cipher_name="${backup_name}.age"
+    age --encrypt -r "${AGE_PUBLIC_KEY}" "${backup_name}" > "${cipher_name}"
     backup_name="${cipher_name}"
 fi
 
