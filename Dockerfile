@@ -8,5 +8,7 @@ RUN chmod +x mc
 RUN mv mc /bin/mc
 
 COPY --chmod=0755 entrypoint.sh .
+COPY --chmod=0755 backup.sh .
+COPY --chmod=0755 restore.sh .
 
-ENTRYPOINT ./entrypoint.sh
+ENTRYPOINT ["./entrypoint.sh"]
